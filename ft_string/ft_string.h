@@ -6,7 +6,7 @@
 # define FT_LS_FT_STRING_H
 
 #include <unistd.h>
-#include "../ft_memory/ft_memory.h"
+#include <ft_memory.h>
 
 size_t ft_strlen(const char *str);
 char *ft_string(const char *str);
