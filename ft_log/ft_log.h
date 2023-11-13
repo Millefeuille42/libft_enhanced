@@ -16,13 +16,13 @@ enum log_level {
 };
 
 # ifndef LOG_LEVEL
-#  define LOG_LEVEL ERROR
+#  define LOG_LEVEL INFO
 # endif
 
 void print_level(enum log_level level);
-void ft_logstr(enum log_level level, char *str);
-void ft_logstr_no_header(enum log_level level, char *str);
+void ft_logstr(enum log_level level, const char *str);
+void ft_logstr_no_header(enum log_level level, const char *str);
 void ft_lognbr(enum log_level level, long n);
-void ft_lognbr_in_between(enum log_level level, char *prefix, long n, char *suffix, char no_header);
+void ft_lognbr_in_between(enum log_level level, const char *prefix, long n, const char *suffix, char no_header);
 
 #endif //LEMIPC_FT_LOG_H

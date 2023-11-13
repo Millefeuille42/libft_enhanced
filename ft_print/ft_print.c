@@ -4,27 +4,40 @@
 
 #include "ft_print.h"
 
-inline static ssize_t flush(int fd, char *buffer, size_t *len) {
-	ssize_t ret = write(fd, buffer, *len);
+size_t* get_cursor(const int fd) {
+	static size_t cursor[2] = {0};
+	return fd != 1 && fd != 2 ? NULL : &cursor[fd - 1];
+}
+
+char* get_buffer(const int fd) {
+	static char buffer[2][FT_PRINT_BUFFER_SIZE] = {0};
+	return fd != 1 && fd != 2 ? NULL : buffer[fd - 1];
+}
+
+ssize_t flush(const int fd) {
+	char* buffer = get_buffer(fd);
+	if (!buffer) return 0;
+	size_t* len = get_cursor(fd);
+	if (!len) return 0;
+
+	//write(1, "\n\nFLUSHING\n\n", sizeof("\n\nFLUSHING\n"));
+	const ssize_t ret = write(fd, buffer, *len);
 	ft_bzero(buffer, FT_PRINT_BUFFER_SIZE);
 	*len = 0;
 	return ret;
 }
 
-ssize_t buffered_write(int fd, const char *s, size_t len) {
-	static char buffer[2][FT_PRINT_BUFFER_SIZE] = {0};
-	static size_t cursor[2] = {0};
+ssize_t buffered_write(const int fd, const char* s, const size_t len) {
+	char* buffer = get_buffer(fd);
+	size_t* cursor = get_cursor(fd);
+	if (!buffer | !len) return write(fd, s, len);
+
 	size_t count = 0;
-
-	if (fd != 1 && fd != 2) return write(fd, s, len);
-
-	int index = fd - 1;
 	for (; count < len; count++) {
-		buffer[index][cursor[index]] = s[count];
-		cursor[index]++;
-		if (s[count] == '\n' || cursor[index] == FT_PRINT_BUFFER_SIZE) {
-			flush(fd, buffer[index], &cursor[index]);
-			continue;
+		buffer[*cursor] = s[count];
+		*cursor += 1;
+		if ((FT_PRINT_FLUSH_NEWLINE && s[count] == '\n') || *cursor == FT_PRINT_BUFFER_SIZE) {
+			flush(fd);
 		}
 	}
 
@@ -33,8 +46,6 @@ ssize_t buffered_write(int fd, const char *s, size_t len) {
 
 __attribute__((destructor))
 void final_flush(void) {
-	for (size_t i = 0; i < FT_PRINT_BUFFER_SIZE; i++) {
-		buffered_write(1, "\0", 1);
-		buffered_write(2, "\0", 1);
-	}
+	flush(1);
+	flush(2);
 }
