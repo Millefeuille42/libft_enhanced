@@ -4,7 +4,7 @@
 
 #include "ft_error.h"
 
-void log_error(char *add) {
+void log_error(const char *add) {
     ft_logstr(ERROR, PROGRAM_NAME);
 	ft_logstr_no_header(ERROR, ": error: ");
 	perror(add);
